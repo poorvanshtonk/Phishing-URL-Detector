@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Phishing URL Detector</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="container">
+    <h1>🛡️ Phishing URL Detector</h1>
+
+    <div class="input-section">
+      <input type="text" id="urlInput" placeholder="Enter URL..." />
+      <button id="checkBtn">Check</button>
+    </div>
+
+    <div class="controls">
+      <input type="text" id="searchInput" placeholder="Search history..." />
+      
+      <select id="filterSelect">
+        <option value="All">All</option>
+        <option value="Safe">Safe</option>
+        <option value="Suspicious">Suspicious</option>
+        <option value="Phishing">Phishing</option>
+      </select>
+
+      <button id="sortBtn">Sort by Risk</button>
+    </div>
+
+    <div id="results"></div>
+  </div>
+
+  <script type="module" src="script.js"></script>
+</body>
+</html>

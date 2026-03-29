@@ -10,20 +10,20 @@ This project demonstrates practical applications of cybersecurity concepts using
 
 ## 🎯 Objectives
 
-* Detect malicious or suspicious URLs
-* Analyze URL structure using heuristic rules
-* Integrate external phishing detection APIs
-* Provide an interactive UI with search, filter, and sorting
-* Demonstrate clean and modular JavaScript architecture
+- Detect malicious or suspicious URLs
+- Analyze URL structure using heuristic rules
+- Integrate external phishing detection APIs
+- Provide an interactive UI with search, filter, and sorting
+- Demonstrate clean and modular JavaScript architecture
 
 ---
 
 ## ⚙️ Tech Stack
 
-* **JavaScript (ES6+)** – Core logic and data handling
-* **HTML5 & CSS3** – UI structure and styling
-* **Fetch API** – API integration
-* **LocalStorage** – Persistent data storage
+- **JavaScript (ES6+)** – Core logic and data handling
+- **HTML5 & CSS3** – UI structure and styling
+- **Fetch API** – API integration
+- **LocalStorage** – Persistent data storage
 
 ---
 
@@ -31,44 +31,44 @@ This project demonstrates practical applications of cybersecurity concepts using
 
 ### 🔍 URL Analysis
 
-* Accepts user-input URLs
-* Performs real-time phishing analysis
+- Accepts user-input URLs
+- Performs real-time phishing analysis
 
 ### 🌐 API Integration
 
-* Checks URLs against phishing databases (e.g., PhishTank / Safe Browsing)
+- Checks URLs against phishing databases (e.g., PhishTank / Safe Browsing)
 
 ### 🧠 Custom Risk Engine
 
-* Evaluates URLs based on:
+- Evaluates URLs based on:
+  - Length
+  - Presence of special characters (@, -)
+  - HTTPS usage
+  - Subdomain depth
 
-  * Length
-  * Presence of special characters (@, -)
-  * HTTPS usage
-  * Subdomain depth
-* Generates a **risk score**
+- Generates a **risk score**
 
 ### 📊 Classification System
 
-* Safe 🟢
-* Suspicious 🟡
-* Phishing 🔴
+- Safe 🟢
+- Suspicious 🟡
+- Phishing 🔴
 
 ### 🔎 Search Functionality
 
-* Search through previously analyzed URLs
+- Search through previously analyzed URLs
 
 ### 🎯 Filtering
 
-* Filter URLs based on risk level
+- Filter URLs based on risk level
 
 ### 🔽 Sorting
 
-* Sort URLs by risk score
+- Sort URLs by risk score
 
 ### 💾 Local Storage
 
-* Saves analysis history persistently
+- Saves analysis history persistently
 
 ---
 
@@ -94,10 +94,10 @@ Custom weighted scoring logic for more accurate classification.
 
 Separation of concerns:
 
-* API handling
-* Risk analysis
-* UI rendering
-* Storage
+- API handling
+- Risk analysis
+- UI rendering
+- Storage
 
 ### 🌙 Dark Mode (Optional)
 
@@ -109,9 +109,9 @@ Improves user experience and accessibility.
 
 1. User inputs a URL
 2. The system:
+   - Calls a phishing detection API
+   - Applies custom heuristic rules
 
-   * Calls a phishing detection API
-   * Applies custom heuristic rules
 3. A risk score is generated
 4. The URL is classified and displayed
 5. Results are stored for future analysis
@@ -145,28 +145,28 @@ git clone https://github.com/your-username/phishing-url-detector.git
 
 ## 📅 Milestone Mapping
 
-* **Milestone 1:** Project planning and setup
-* **Milestone 2:** API integration and data display
-* **Milestone 3:** Search, filter, sort using HOFs
-* **Milestone 4:** Deployment and documentation
+- **Milestone 1:** Project planning and setup
+- **Milestone 2:** API integration and data display
+- **Milestone 3:** Search, filter, sort using HOFs
+- **Milestone 4:** Deployment and documentation
 
 ---
 
 ## 💡 Future Enhancements
 
-* Real-time URL monitoring
-* Machine learning-based phishing detection
-* Browser extension version
+- Real-time URL monitoring
+- Machine learning-based phishing detection
+- Browser extension version
 
 ---
 
 ## 🧠 Learning Outcomes
 
-* Practical cybersecurity concepts
-* API integration using Fetch
-* JavaScript higher-order functions
-* Modular code design
-* Performance optimization techniques
+- Practical cybersecurity concepts
+- API integration using Fetch
+- JavaScript higher-order functions
+- Modular code design
+- Performance optimization techniques
 
 ---
 
