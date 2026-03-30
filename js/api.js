@@ -1,4 +1,4 @@
-const API_KEY = "AIzaSyBxalQyTFGeJDTd8MpKJD3DGZ3qZ5nAd40";
+const API_KEY = "";
 
 export async function checkPhishingAPI(url) {
   const endpoint = `https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${API_KEY}`;
