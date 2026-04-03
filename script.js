@@ -1,62 +1,136 @@
 import { analyzeURL } from "./js/analyzer.js";
-import { saveToStorage, getFromStorage } from "./js/storage.js";
 import { render } from "./js/ui.js";
+import { getFromStorage, saveToStorage } from "./js/storage.js";
 
-let history = getFromStorage();
+const state = {
+  history: [],
+  searchTerm: "",
+  filter: "All",
+  sortDescending: false
+};
 
-// Initial render
-render(history);
+function getElement(id) {
+  const element = document.getElementById(id);
 
-// Handle Check Button (UPDATED ✅)
-document.getElementById("checkBtn").addEventListener("click", async () => {
-  const url = document.getElementById("urlInput").value.trim();
+  if (!element) {
+    throw new Error(`Missing required element: #${id}`);
+  }
 
-  if (!url) return alert("Enter a URL");
+  return element;
+}
 
-  // ⏳ Show loading state
-  render([{ url: "Checking...", score: "-", level: "Loading" }]);
+function normalizeStoredHistory(value) {
+  return Array.isArray(value) ? value.filter((item) => item && typeof item === "object") : [];
+}
+
+function applyViewState() {
+  let items = [...state.history];
+
+  if (state.filter !== "All") {
+    items = items.filter((item) => item?.level === state.filter);
+  }
+
+  if (state.searchTerm) {
+    const needle = state.searchTerm.toLowerCase();
+    items = items.filter((item) => {
+      const url = typeof item?.url === "string" ? item.url.toLowerCase() : "";
+      return url.includes(needle);
+    });
+  }
+
+  if (state.sortDescending) {
+    items.sort((left, right) => {
+      const leftScore = Number.isFinite(left?.score) ? left.score : -1;
+      const rightScore = Number.isFinite(right?.score) ? right.score : -1;
+      return rightScore - leftScore;
+    });
+  }
+
+  render(items);
+}
+
+function setBusy(button, isBusy) {
+  button.disabled = isBusy;
+  button.textContent = isBusy ? "Checking..." : "Check";
+}
+
+function getNormalizedInputUrl(rawValue) {
+  const value = typeof rawValue === "string" ? rawValue.trim() : "";
+
+  if (!value) {
+    throw new Error("Enter a URL.");
+  }
+
+  const withProtocol = /^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(value) ? value : `https://${value}`;
+  return new URL(withProtocol).href;
+}
+
+async function handleCheck() {
+  const input = getElement("urlInput");
+  const button = getElement("checkBtn");
 
   try {
-    const result = await analyzeURL(url);
+    setBusy(button, true);
 
-    history.push(result);
+    const normalizedUrl = getNormalizedInputUrl(input.value);
+    const result = await analyzeURL(normalizedUrl);
+
+    state.history.unshift(result);
     saveToStorage(result);
-
-    render(history);
-
+    input.value = normalizedUrl;
+    applyViewState();
   } catch (error) {
-    console.error(error);
-    alert("Error analyzing URL");
-    render(history);
+    console.error("URL analysis failed:", error);
+    window.alert(error instanceof Error ? error.message : "Unable to analyze the URL.");
+  } finally {
+    setBusy(button, false);
   }
-});
+}
 
+function bindEvents() {
+  const checkBtn = getElement("checkBtn");
+  const urlInput = getElement("urlInput");
+  const searchInput = getElement("searchInput");
+  const filterSelect = getElement("filterSelect");
+  const sortBtn = getElement("sortBtn");
 
-// 🔍 SEARCH (HOF - correct)
-document.getElementById("searchInput").addEventListener("input", (e) => {
-  const value = e.target.value.toLowerCase();
+  checkBtn.addEventListener("click", async () => {
+    await handleCheck();
+  });
 
-  const filtered = history.filter(item =>
-    item.url.toLowerCase().includes(value)
-  );
+  urlInput.addEventListener("keydown", async (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      await handleCheck();
+    }
+  });
 
-  render(filtered);
-});
+  searchInput.addEventListener("input", (event) => {
+    state.searchTerm = typeof event.target?.value === "string" ? event.target.value.trim() : "";
+    applyViewState();
+  });
 
+  filterSelect.addEventListener("change", (event) => {
+    state.filter = typeof event.target?.value === "string" ? event.target.value : "All";
+    applyViewState();
+  });
 
-// 🎯 FILTER (HOF)
-document.getElementById("filterSelect").addEventListener("change", (e) => {
-  const value = e.target.value;
+  sortBtn.addEventListener("click", () => {
+    state.sortDescending = !state.sortDescending;
+    sortBtn.textContent = state.sortDescending ? "Sorted by Risk" : "Sort by Risk";
+    applyViewState();
+  });
+}
 
-  if (value === "All") return render(history);
+function initializeApp() {
+  try {
+    state.history = normalizeStoredHistory(getFromStorage());
+    bindEvents();
+    applyViewState();
+  } catch (error) {
+    console.error("App initialization failed:", error);
+    window.alert("The app could not be initialized. Check the console for details.");
+  }
+}
 
-  const filtered = history.filter(item => item.level === value);
-  render(filtered);
-});
-
-
-// 🔽 SORT (HOF)
-document.getElementById("sortBtn").addEventListener("click", () => {
-  const sorted = [...history].sort((a, b) => b.score - a.score);
-  render(sorted);
-});
+initializeApp();

@@ -1,0 +1,12 @@
+# Node modules
+node_modules/
+
+# Environment files
+.env
+server/.env
+
+# Logs
+npm-debug.log*
+
+# OS files
+.DS_Store
