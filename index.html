@@ -7,29 +7,127 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <div class="page-shell">
+    <div class="background-orb orb-one"></div>
+    <div class="background-orb orb-two"></div>
 
-  <div class="container">
-    <h1>🛡️ Phishing URL Detector</h1>
+    <main class="app-shell">
+      <section class="hero-panel">
+        <div class="hero-copy">
+          <p class="eyebrow">Browser Safety Workspace</p>
+          <h1>Phishing URL Detector</h1>
+          <p class="hero-text">
+            Inspect suspicious links, surface risky patterns fast, and keep a searchable history of every check.
+          </p>
+        </div>
 
-    <div class="input-section">
-      <input type="text" id="urlInput" placeholder="Enter URL..." />
-      <button id="checkBtn">Check</button>
-    </div>
+        <div class="hero-summary">
+          <div class="summary-card emphasis">
+            <span class="summary-label">Recent Checks</span>
+            <strong id="summaryTotal">0</strong>
+            <span class="summary-meta">Stored locally in this browser</span>
+          </div>
+          <div class="summary-card">
+            <span class="summary-label">High Risk</span>
+            <strong id="summaryPhishing">0</strong>
+            <span class="summary-meta">Flagged as phishing</span>
+          </div>
+          <div class="summary-card">
+            <span class="summary-label">Safe Calls</span>
+            <strong id="summarySafe">0</strong>
+            <span class="summary-meta">Low-risk assessments</span>
+          </div>
+        </div>
+      </section>
 
-    <div class="controls">
-      <input type="text" id="searchInput" placeholder="Search history..." />
-      
-      <select id="filterSelect">
-        <option value="All">All</option>
-        <option value="Safe">Safe</option>
-        <option value="Suspicious">Suspicious</option>
-        <option value="Phishing">Phishing</option>
-      </select>
+      <section class="workspace-grid">
+        <section class="panel analyzer-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="section-kicker">Analyze</p>
+              <h2>Check a URL</h2>
+            </div>
+            <span class="panel-tag">Heuristics + backend lookup</span>
+          </div>
 
-      <button id="sortBtn">Sort by Risk</button>
-    </div>
+          <label class="input-label" for="urlInput">URL to inspect</label>
+          <div class="input-row">
+            <input
+              type="text"
+              id="urlInput"
+              placeholder="example.com/login"
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <button id="checkBtn">Analyze URL</button>
+          </div>
 
-    <div id="results"></div>
+          <div id="feedback" class="feedback" aria-live="polite">
+            Enter a full URL or domain. Missing protocols are added automatically.
+          </div>
+
+          <div class="signal-list" aria-label="Checks included">
+            <span>URL length</span>
+            <span>Unsafe protocol</span>
+            <span>Hostname complexity</span>
+            <span>Credential masking</span>
+          </div>
+        </section>
+
+        <aside class="panel insights-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="section-kicker">Overview</p>
+              <h2>Session snapshot</h2>
+            </div>
+          </div>
+
+          <div class="insight-stack">
+            <div class="insight-row">
+              <span>Latest activity</span>
+              <strong id="summaryLastChecked">No checks yet</strong>
+            </div>
+            <div class="insight-row">
+              <span>Visible results</span>
+              <strong id="historyCount">0</strong>
+            </div>
+            <div class="insight-row">
+              <span>Current filter</span>
+              <strong id="activeFilterLabel">All results</strong>
+            </div>
+          </div>
+
+          <p class="insight-note">
+            Suspicious and phishing results deserve manual verification before clicking, logging in, or sharing credentials.
+          </p>
+        </aside>
+      </section>
+
+      <section class="panel history-panel">
+        <div class="history-toolbar">
+          <div>
+            <p class="section-kicker">History</p>
+            <h2>Review previous checks</h2>
+          </div>
+
+          <div class="toolbar-actions">
+            <input type="text" id="searchInput" placeholder="Search checked URLs" />
+
+            <select id="filterSelect" aria-label="Filter results by risk">
+              <option value="All">All</option>
+              <option value="Safe">Safe</option>
+              <option value="Suspicious">Suspicious</option>
+              <option value="Phishing">Phishing</option>
+            </select>
+
+            <button id="sortBtn" class="secondary-button">Sort: Newest</button>
+            <button id="clearHistoryBtn" class="ghost-button">Clear history</button>
+          </div>
+        </div>
+
+        <div id="results" class="results-grid"></div>
+      </section>
+    </main>
   </div>
 
   <script type="module" src="script.js"></script>

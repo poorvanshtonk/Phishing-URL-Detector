@@ -23,15 +23,15 @@ function createTextElement(tagName, text, className = "") {
   return element;
 }
 
-function getSafeUrlLabel(value) {
+function getSafeUrl(value) {
   if (typeof value !== "string" || value.trim() === "") {
-    return "Invalid URL";
+    return null;
   }
 
   try {
-    return new URL(value).href;
+    return new URL(value);
   } catch {
-    return "Invalid URL";
+    return null;
   }
 }
 
@@ -42,38 +42,120 @@ function getRiskClass(level) {
   return "unknown";
 }
 
+function getBackendLabel(item) {
+  if (item?.apiFlag) {
+    return {
+      text: "Matched backend phishing signal",
+      className: "backend-indicator flagged"
+    };
+  }
+
+  if (typeof item?.error === "string" && item.error.trim()) {
+    return {
+      text: "Backend unavailable during this check",
+      className: "backend-indicator warning"
+    };
+  }
+
+  return {
+    text: "No backend phishing match found",
+    className: "backend-indicator"
+  };
+}
+
+function buildCardHeader(item, parsedUrl) {
+  const top = document.createElement("div");
+  top.className = "card-top";
+
+  const hostWrap = document.createElement("div");
+  const host = createTextElement("strong", parsedUrl?.hostname ?? "Invalid URL", "card-host");
+  const url = createTextElement("p", parsedUrl?.href ?? "Invalid URL", "card-url");
+
+  hostWrap.append(host, url);
+
+  const badge = createTextElement("span", item?.level ?? "Unknown", `risk-badge ${getRiskClass(item?.level ?? null)}`);
+
+  top.append(hostWrap, badge);
+  return top;
+}
+
+function buildCardSignals(item) {
+  const signalRow = document.createElement("div");
+  signalRow.className = "card-signal-row";
+
+  const scoreWrap = document.createElement("div");
+  const score = Number.isFinite(item?.score) ? String(item.score) : "-";
+
+  scoreWrap.innerHTML = `<span class="risk-label">Risk score</span><strong class="risk-score">${score}</strong>`;
+
+  const backendInfo = getBackendLabel(item);
+  const backend = createTextElement("span", backendInfo.text, backendInfo.className);
+
+  signalRow.append(scoreWrap, backend);
+  return signalRow;
+}
+
+function buildCardFooter(item) {
+  const footer = document.createElement("div");
+  footer.className = "card-footer";
+
+  const timestamp = typeof item?.timestamp === "string" && item.timestamp.trim()
+    ? item.timestamp
+    : "Unknown time";
+
+  const apiState = item?.apiFlag ? "Backend match" : "Heuristic assessment";
+
+  footer.append(
+    createTextElement("span", timestamp, "card-meta"),
+    createTextElement("span", apiState, "card-meta")
+  );
+
+  return footer;
+}
+
 function buildResultCard(item) {
-  const card = document.createElement("div");
-  card.classList.add("result-card", getRiskClass(item.level ?? null));
+  const card = document.createElement("article");
+  card.classList.add("result-card", getRiskClass(item?.level ?? null));
 
-  const urlRow = document.createElement("p");
-  const strong = document.createElement("strong");
-  strong.textContent = getSafeUrlLabel(item.url);
-  urlRow.appendChild(strong);
+  const parsedUrl = getSafeUrl(item?.url);
 
-  const score = Number.isFinite(item.score) ? item.score : "-";
-  const status = typeof item.level === "string" && item.level.trim() ? item.level : "Unknown";
-  const timestamp = typeof item.timestamp === "string" ? item.timestamp : "";
+  card.append(
+    buildCardHeader(item, parsedUrl),
+    buildCardSignals(item)
+  );
 
-  const scoreRow = createTextElement("p", `Score: ${score}`);
-  const statusRow = createTextElement("p", `Status: ${status}`);
-  const timeRow = createTextElement("p", timestamp, "timestamp");
+  if (typeof item?.error === "string" && item.error.trim()) {
+    card.appendChild(createTextElement("div", item.error, "card-alert"));
+  }
 
-  timeRow.style.fontSize = "12px";
-  timeRow.style.opacity = "0.7";
-
-  card.append(urlRow, scoreRow, statusRow, timeRow);
+  card.appendChild(buildCardFooter(item));
   return card;
 }
 
-export function render(data) {
+function buildEmptyState(message) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "empty-state";
+
+  wrapper.append(
+    createTextElement("h3", "No results to show"),
+    createTextElement("p", message, "empty-copy"),
+    createTextElement("p", "Run a URL check or loosen the current search and filter settings.", "empty-caption")
+  );
+
+  return wrapper;
+}
+
+export function render(data, options = {}) {
   const container = getContainer();
   const safeData = asArray(data);
+  const emptyMessage = typeof options.emptyMessage === "string" && options.emptyMessage.trim()
+    ? options.emptyMessage
+    : "No results found.";
 
   container.replaceChildren();
 
   if (safeData.length === 0) {
-    container.appendChild(createTextElement("p", "No results found"));
+    container.appendChild(buildEmptyState(emptyMessage));
     return;
   }
 
@@ -88,7 +170,7 @@ export function render(data) {
   });
 
   if (!fragment.childNodes.length) {
-    fragment.appendChild(createTextElement("p", "No results found"));
+    fragment.appendChild(buildEmptyState(emptyMessage));
   }
 
   container.appendChild(fragment);
