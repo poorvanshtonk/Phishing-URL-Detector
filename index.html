@@ -2,130 +2,253 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Phishing URL Detector</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PhishGuard | Phishing URL Detector</title>
+  <meta
+    name="description"
+    content="Detect suspicious URLs, score phishing risk, and review link checks in a polished browser-based security dashboard."
+  />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="page-shell">
-    <div class="background-orb orb-one"></div>
-    <div class="background-orb orb-two"></div>
+  <div class="site-shell">
+    <div class="ambient ambient-left"></div>
+    <div class="ambient ambient-right"></div>
 
-    <main class="app-shell">
-      <section class="hero-panel">
+    <header class="topbar">
+      <a class="brand" href="#hero" aria-label="PhishGuard home">
+        <span class="brand-mark">PG</span>
+        <span class="brand-copy">
+          <strong>PhishGuard</strong>
+          <small>Phishing URL Detector</small>
+        </span>
+      </a>
+
+      <div class="topbar-actions">
+        <button id="themeToggle" class="theme-toggle" type="button" aria-label="Switch color theme">
+          <span class="theme-toggle-icon" aria-hidden="true">◐</span>
+          <span id="themeToggleLabel">Dark mode</span>
+        </button>
+
+        <button id="navToggle" class="nav-toggle" type="button" aria-expanded="false" aria-controls="siteNav">
+          Menu
+        </button>
+
+        <nav id="siteNav" class="site-nav" aria-label="Primary">
+          <a href="#analyzer">Scanner</a>
+          <a href="#features">Signals</a>
+          <a href="#workflow">Workflow</a>
+          <a href="#history">History</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section id="hero" class="hero-section reveal-on-scroll">
         <div class="hero-copy">
-          <p class="eyebrow">Browser Safety Workspace</p>
-          <h1>Phishing URL Detector</h1>
+          <p class="section-tag">Built for fast link triage</p>
+          <h1>Spot risky URLs before they turn into credential theft.</h1>
           <p class="hero-text">
-            Inspect suspicious links, surface risky patterns fast, and keep a searchable history of every check.
+            PhishGuard combines visible URL heuristics with backend checks to help users inspect login links, shortened redirects,
+            and suspicious domains in one focused workspace.
           </p>
-        </div>
 
-        <div class="hero-summary">
-          <div class="summary-card emphasis">
-            <span class="summary-label">Recent Checks</span>
-            <strong id="summaryTotal">0</strong>
-            <span class="summary-meta">Stored locally in this browser</span>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#analyzer">Start scanning</a>
+            <a class="button button-secondary" href="#features">See the signals</a>
           </div>
-          <div class="summary-card">
-            <span class="summary-label">High Risk</span>
-            <strong id="summaryPhishing">0</strong>
-            <span class="summary-meta">Flagged as phishing</span>
-          </div>
-          <div class="summary-card">
-            <span class="summary-label">Safe Calls</span>
-            <strong id="summarySafe">0</strong>
-            <span class="summary-meta">Low-risk assessments</span>
-          </div>
-        </div>
-      </section>
 
-      <section class="workspace-grid">
-        <section class="panel analyzer-panel">
-          <div class="panel-heading">
-            <div>
-              <p class="section-kicker">Analyze</p>
-              <h2>Check a URL</h2>
+          <div class="hero-proof">
+            <div class="proof-item">
+              <span class="proof-value" id="summaryTotal">0</span>
+              <span class="proof-label">URLs reviewed</span>
             </div>
-            <span class="panel-tag">Heuristics + backend lookup</span>
-          </div>
-
-          <label class="input-label" for="urlInput">URL to inspect</label>
-          <div class="input-row">
-            <input
-              type="text"
-              id="urlInput"
-              placeholder="example.com/login"
-              autocomplete="off"
-              spellcheck="false"
-            />
-            <button id="checkBtn">Analyze URL</button>
-          </div>
-
-          <div id="feedback" class="feedback" aria-live="polite">
-            Enter a full URL or domain. Missing protocols are added automatically.
-          </div>
-
-          <div class="signal-list" aria-label="Checks included">
-            <span>URL length</span>
-            <span>Unsafe protocol</span>
-            <span>Hostname complexity</span>
-            <span>Credential masking</span>
-          </div>
-        </section>
-
-        <aside class="panel insights-panel">
-          <div class="panel-heading">
-            <div>
-              <p class="section-kicker">Overview</p>
-              <h2>Session snapshot</h2>
+            <div class="proof-item">
+              <span class="proof-value" id="summaryPhishing">0</span>
+              <span class="proof-label">High-risk flags</span>
+            </div>
+            <div class="proof-item">
+              <span class="proof-value" id="summarySafe">0</span>
+              <span class="proof-label">Safe assessments</span>
             </div>
           </div>
+        </div>
 
-          <div class="insight-stack">
-            <div class="insight-row">
-              <span>Latest activity</span>
+        <div class="hero-card">
+          <div class="hero-card-header">
+            <p>Live security posture</p>
+            <span class="status-pill">Browser-based</span>
+          </div>
+
+          <div class="hero-card-grid">
+            <article class="metric-card metric-card-emphasis">
+              <span class="metric-label">Latest activity</span>
               <strong id="summaryLastChecked">No checks yet</strong>
-            </div>
-            <div class="insight-row">
-              <span>Visible results</span>
+              <p>Every analysis is stored locally for quick review.</p>
+            </article>
+
+            <article class="metric-card">
+              <span class="metric-label">Visible results</span>
               <strong id="historyCount">0</strong>
-            </div>
-            <div class="insight-row">
-              <span>Current filter</span>
+              <p>Updated instantly as you search and filter.</p>
+            </article>
+
+            <article class="metric-card">
+              <span class="metric-label">Current view</span>
               <strong id="activeFilterLabel">All results</strong>
-            </div>
-          </div>
-
-          <p class="insight-note">
-            Suspicious and phishing results deserve manual verification before clicking, logging in, or sharing credentials.
-          </p>
-        </aside>
-      </section>
-
-      <section class="panel history-panel">
-        <div class="history-toolbar">
-          <div>
-            <p class="section-kicker">History</p>
-            <h2>Review previous checks</h2>
-          </div>
-
-          <div class="toolbar-actions">
-            <input type="text" id="searchInput" placeholder="Search checked URLs" />
-
-            <select id="filterSelect" aria-label="Filter results by risk">
-              <option value="All">All</option>
-              <option value="Safe">Safe</option>
-              <option value="Suspicious">Suspicious</option>
-              <option value="Phishing">Phishing</option>
-            </select>
-
-            <button id="sortBtn" class="secondary-button">Sort: Newest</button>
-            <button id="clearHistoryBtn" class="ghost-button">Clear history</button>
+              <p>Switch between all, safe, suspicious, and phishing.</p>
+            </article>
           </div>
         </div>
+      </section>
 
-        <div id="results" class="results-grid"></div>
+      <section class="trust-strip reveal-on-scroll" aria-label="Key capabilities">
+        <span>Heuristic URL scoring</span>
+        <span>Backend phishing match lookup</span>
+        <span>Searchable local history</span>
+        <span>Standalone HTML, CSS, and JavaScript</span>
+      </section>
+
+      <section id="features" class="content-section reveal-on-scroll">
+        <div class="section-heading">
+          <p class="section-tag">Why it works</p>
+          <h2>Designed around the signals attackers depend on.</h2>
+        </div>
+
+        <div class="feature-grid">
+          <article class="feature-card">
+            <span class="feature-index">01</span>
+            <h3>Deceptive URL structures</h3>
+            <p>Long URLs, masked credentials, unusual hostnames, and extra subdomains are scored immediately.</p>
+          </article>
+          <article class="feature-card">
+            <span class="feature-index">02</span>
+            <h3>Unsafe delivery patterns</h3>
+            <p>Non-HTTPS links and suspicious domain shapes are surfaced before a user interacts with the page.</p>
+          </article>
+          <article class="feature-card">
+            <span class="feature-index">03</span>
+            <h3>Operational visibility</h3>
+            <p>Every check stays searchable in the browser so repeat reviews and investigation trails stay fast.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="workflow" class="content-section workflow-section reveal-on-scroll">
+        <div class="section-heading">
+          <p class="section-tag">Workflow</p>
+          <h2>From suspicious link to decision in a few seconds.</h2>
+        </div>
+
+        <div class="workflow-grid">
+          <article class="workflow-step">
+            <span>Step 1</span>
+            <h3>Paste the URL</h3>
+            <p>Enter a full link or raw domain. Missing protocols are normalized automatically.</p>
+          </article>
+          <article class="workflow-step">
+            <span>Step 2</span>
+            <h3>Run the analysis</h3>
+            <p>Heuristic scoring and backend lookup work together to classify the destination.</p>
+          </article>
+          <article class="workflow-step">
+            <span>Step 3</span>
+            <h3>Review the evidence</h3>
+            <p>Risk labels, scores, and backend results help decide whether the link is safe to trust.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="analyzer" class="workspace-section reveal-on-scroll">
+        <div class="section-heading">
+          <p class="section-tag">Scanner</p>
+          <h2>Analyze a suspicious link right now.</h2>
+        </div>
+
+        <div class="workspace-grid">
+          <section class="panel scanner-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="panel-kicker">Live analysis</p>
+                <h3>URL inspection console</h3>
+              </div>
+              <span class="panel-badge">Heuristics + API</span>
+            </div>
+
+            <label class="input-label" for="urlInput">URL to inspect</label>
+            <div class="input-row">
+              <input
+                type="text"
+                id="urlInput"
+                placeholder="example.com/login"
+                autocomplete="off"
+                spellcheck="false"
+              />
+              <button id="checkBtn" class="button button-primary" type="button">Analyze URL</button>
+            </div>
+
+            <div id="feedback" class="feedback" aria-live="polite">
+              Enter a full URL or domain. Missing protocols are added automatically.
+            </div>
+
+            <div class="signal-list" aria-label="Checks included">
+              <span>URL length</span>
+              <span>HTTPS usage</span>
+              <span>Hostname complexity</span>
+              <span>Credential masking</span>
+              <span>Backend match result</span>
+            </div>
+          </section>
+
+          <aside class="panel side-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="panel-kicker">Guidance</p>
+                <h3>What to do with a risky result</h3>
+              </div>
+            </div>
+
+            <div class="guidance-list">
+              <article>
+                <strong>Safe</strong>
+                <p>Low-risk heuristic result. Review the destination anyway if it asks for credentials.</p>
+              </article>
+              <article>
+                <strong>Suspicious</strong>
+                <p>Inspect manually before clicking. Confirm the sender, hostname, and certificate details.</p>
+              </article>
+              <article>
+                <strong>Phishing</strong>
+                <p>Do not sign in or submit data. Escalate the link for manual investigation or blocklisting.</p>
+              </article>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section id="history" class="content-section reveal-on-scroll">
+        <div class="panel history-panel">
+          <div class="history-toolbar">
+            <div>
+              <p class="panel-kicker">History</p>
+              <h3>Review previous checks</h3>
+            </div>
+
+            <div class="toolbar-actions">
+              <input type="text" id="searchInput" placeholder="Search checked URLs" />
+              <select id="filterSelect" aria-label="Filter results by risk">
+                <option value="All">All</option>
+                <option value="Safe">Safe</option>
+                <option value="Suspicious">Suspicious</option>
+                <option value="Phishing">Phishing</option>
+              </select>
+              <button id="sortBtn" class="button button-secondary" type="button">Sort: Newest</button>
+              <button id="clearHistoryBtn" class="button button-ghost" type="button">Clear history</button>
+            </div>
+          </div>
+
+          <div id="results" class="results-grid"></div>
+        </div>
       </section>
     </main>
   </div>

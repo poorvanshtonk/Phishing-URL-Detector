@@ -9,6 +9,8 @@ const state = {
   sortMode: "newest"
 };
 
+const THEME_STORAGE_KEY = "theme-preference";
+
 function getElement(id) {
   const element = document.getElementById(id);
 
@@ -95,6 +97,99 @@ function applyViewState() {
 function setBusy(button, isBusy) {
   button.disabled = isBusy;
   button.textContent = isBusy ? "Analyzing..." : "Analyze URL";
+}
+
+function getPreferredTheme() {
+  const storedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+
+  if (storedTheme === "light" || storedTheme === "dark") {
+    return storedTheme;
+  }
+
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+function updateThemeButton(theme) {
+  const label = document.getElementById("themeToggleLabel");
+  const toggle = document.getElementById("themeToggle");
+
+  if (!label || !toggle) {
+    return;
+  }
+
+  const nextMode = theme === "dark" ? "Light mode" : "Dark mode";
+  label.textContent = nextMode;
+  toggle.setAttribute("aria-label", `Switch to ${nextMode.toLowerCase()}`);
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  localStorage.setItem(THEME_STORAGE_KEY, theme);
+  updateThemeButton(theme);
+}
+
+function initializeTheme() {
+  const themeToggle = document.getElementById("themeToggle");
+  const initialTheme = getPreferredTheme();
+
+  applyTheme(initialTheme);
+
+  if (!themeToggle) {
+    return;
+  }
+
+  themeToggle.addEventListener("click", () => {
+    const currentTheme = document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+    applyTheme(currentTheme === "dark" ? "light" : "dark");
+  });
+}
+
+function initializeNavigation() {
+  const navToggle = document.getElementById("navToggle");
+  const siteNav = document.getElementById("siteNav");
+
+  if (!navToggle || !siteNav) {
+    return;
+  }
+
+  navToggle.addEventListener("click", () => {
+    const nextExpanded = navToggle.getAttribute("aria-expanded") !== "true";
+    navToggle.setAttribute("aria-expanded", String(nextExpanded));
+    siteNav.classList.toggle("is-open", nextExpanded);
+  });
+
+  siteNav.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => {
+      navToggle.setAttribute("aria-expanded", "false");
+      siteNav.classList.remove("is-open");
+    });
+  });
+}
+
+function initializeRevealAnimations() {
+  const revealables = Array.from(document.querySelectorAll(".reveal-on-scroll"));
+
+  if (!revealables.length) {
+    return;
+  }
+
+  if (!("IntersectionObserver" in window)) {
+    revealables.forEach((element) => element.classList.add("is-visible"));
+    return;
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) {
+        return;
+      }
+
+      entry.target.classList.add("is-visible");
+      observer.unobserve(entry.target);
+    });
+  }, { threshold: 0.16 });
+
+  revealables.forEach((element) => observer.observe(element));
 }
 
 function getNormalizedInputUrl(rawValue) {
@@ -188,6 +283,9 @@ function bindEvents() {
 function initializeApp() {
   try {
     state.history = normalizeStoredHistory(getFromStorage());
+    initializeTheme();
+    initializeNavigation();
+    initializeRevealAnimations();
     bindEvents();
     applyViewState();
   } catch (error) {

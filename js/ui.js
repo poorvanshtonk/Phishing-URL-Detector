@@ -42,6 +42,22 @@ function getRiskClass(level) {
   return "unknown";
 }
 
+function getAssessmentCopy(item) {
+  if (item?.level === "Phishing") {
+    return "Strong phishing indicators were detected. Treat this destination as unsafe until verified manually.";
+  }
+
+  if (item?.level === "Suspicious") {
+    return "Some risk signals are present. Inspect the sender, domain, and destination before proceeding.";
+  }
+
+  if (item?.level === "Safe") {
+    return "No major phishing signals were detected in this pass, but sensitive actions still deserve caution.";
+  }
+
+  return "This result could not be classified confidently.";
+}
+
 function getBackendLabel(item) {
   if (item?.apiFlag) {
     return {
@@ -95,6 +111,10 @@ function buildCardSignals(item) {
   return signalRow;
 }
 
+function buildAssessment(item) {
+  return createTextElement("p", getAssessmentCopy(item), "card-url");
+}
+
 function buildCardFooter(item) {
   const footer = document.createElement("div");
   footer.className = "card-footer";
@@ -121,7 +141,8 @@ function buildResultCard(item) {
 
   card.append(
     buildCardHeader(item, parsedUrl),
-    buildCardSignals(item)
+    buildCardSignals(item),
+    buildAssessment(item)
   );
 
   if (typeof item?.error === "string" && item.error.trim()) {
