@@ -1,255 +1,226 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PhishGuard | Phishing URL Detector</title>
+  <title>PhishGuard | Premium Phishing Detector</title>
   <meta
     name="description"
     content="Detect suspicious URLs, score phishing risk, and review link checks in a polished browser-based security dashboard."
   />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@400;500;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="site-shell">
-    <div class="ambient ambient-left"></div>
-    <div class="ambient ambient-right"></div>
+  <div class="site-background">
+    <div class="glow-orb orb-primary"></div>
+    <div class="glow-orb orb-secondary"></div>
+    <div class="glow-orb orb-tertiary"></div>
+    <div class="noise-overlay"></div>
+  </div>
 
+  <div class="site-shell">
     <header class="topbar">
       <a class="brand" href="#hero" aria-label="PhishGuard home">
-        <span class="brand-mark">PG</span>
-        <span class="brand-copy">
-          <strong>PhishGuard</strong>
-          <small>Phishing URL Detector</small>
-        </span>
+        <div class="brand-logo">
+          <div class="logo-inner"></div>
+        </div>
+        <span class="brand-text">PhishGuard</span>
       </a>
 
+      <nav id="siteNav" class="site-nav" aria-label="Primary">
+        <a href="#analyzer" class="nav-link">Scanner</a>
+        <a href="#features" class="nav-link">Features</a>
+        <a href="#history" class="nav-link">History</a>
+      </nav>
+
       <div class="topbar-actions">
-        <button id="themeToggle" class="theme-toggle" type="button" aria-label="Switch color theme">
-          <span class="theme-toggle-icon" aria-hidden="true">◐</span>
-          <span id="themeToggleLabel">Dark mode</span>
+        <button id="themeToggle" class="icon-button" type="button" aria-label="Toggle Theme">
+          <svg class="theme-icon-dark" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
         </button>
-
-        <button id="navToggle" class="nav-toggle" type="button" aria-expanded="false" aria-controls="siteNav">
-          Menu
+        <button id="navToggle" class="icon-button mobile-only" type="button" aria-expanded="false" aria-controls="siteNav">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
         </button>
-
-        <nav id="siteNav" class="site-nav" aria-label="Primary">
-          <a href="#analyzer">Scanner</a>
-          <a href="#features">Signals</a>
-          <a href="#workflow">Workflow</a>
-          <a href="#history">History</a>
-        </nav>
       </div>
     </header>
 
     <main>
+      <!-- Hero Section -->
       <section id="hero" class="hero-section reveal-on-scroll">
-        <div class="hero-copy">
-          <p class="section-tag">Built for fast link triage</p>
-          <h1>Spot risky URLs before they turn into credential theft.</h1>
-          <p class="hero-text">
-            PhishGuard combines visible URL heuristics with backend checks to help users inspect login links, shortened redirects,
-            and suspicious domains in one focused workspace.
+        <div class="hero-content">
+          <div class="badge-pill">
+            <span class="badge-dot"></span> Next-Gen Security
+          </div>
+          <h1 class="hero-title">
+            Outsmart <span class="text-gradient">Phishing</span><br /> Before It Happens.
+          </h1>
+          <p class="hero-subtitle">
+            Leverage heuristic scoring and backend intelligence to instantly evaluate the legitimacy of any URL. Secure your digital footprint with one click.
           </p>
-
-          <div class="hero-actions">
-            <a class="button button-primary" href="#analyzer">Start scanning</a>
-            <a class="button button-secondary" href="#features">See the signals</a>
+          <div class="hero-cta-group">
+            <a class="btn btn-primary btn-glow" href="#analyzer">
+              Start Scanning
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </a>
+            <a class="btn btn-secondary" href="#features">Explore Features</a>
           </div>
-
-          <div class="hero-proof">
-            <div class="proof-item">
-              <span class="proof-value" id="summaryTotal">0</span>
-              <span class="proof-label">URLs reviewed</span>
+          
+          <div class="stats-row">
+            <div class="stat-item">
+              <h3 class="stat-value" id="summaryTotal">0</h3>
+              <p class="stat-label">URLs Scanned</p>
             </div>
-            <div class="proof-item">
-              <span class="proof-value" id="summaryPhishing">0</span>
-              <span class="proof-label">High-risk flags</span>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+              <h3 class="stat-value text-danger" id="summaryPhishing">0</h3>
+              <p class="stat-label">Threats Caught</p>
             </div>
-            <div class="proof-item">
-              <span class="proof-value" id="summarySafe">0</span>
-              <span class="proof-label">Safe assessments</span>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+              <h3 class="stat-value text-success" id="summarySafe">0</h3>
+              <p class="stat-label">Safe Links</p>
             </div>
           </div>
         </div>
 
-        <div class="hero-card">
-          <div class="hero-card-header">
-            <p>Live security posture</p>
-            <span class="status-pill">Browser-based</span>
-          </div>
-
-          <div class="hero-card-grid">
-            <article class="metric-card metric-card-emphasis">
-              <span class="metric-label">Latest activity</span>
-              <strong id="summaryLastChecked">No checks yet</strong>
-              <p>Every analysis is stored locally for quick review.</p>
-            </article>
-
-            <article class="metric-card">
-              <span class="metric-label">Visible results</span>
-              <strong id="historyCount">0</strong>
-              <p>Updated instantly as you search and filter.</p>
-            </article>
-
-            <article class="metric-card">
-              <span class="metric-label">Current view</span>
-              <strong id="activeFilterLabel">All results</strong>
-              <p>Switch between all, safe, suspicious, and phishing.</p>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section class="trust-strip reveal-on-scroll" aria-label="Key capabilities">
-        <span>Heuristic URL scoring</span>
-        <span>Backend phishing match lookup</span>
-        <span>Searchable local history</span>
-        <span>Standalone HTML, CSS, and JavaScript</span>
-      </section>
-
-      <section id="features" class="content-section reveal-on-scroll">
-        <div class="section-heading">
-          <p class="section-tag">Why it works</p>
-          <h2>Designed around the signals attackers depend on.</h2>
-        </div>
-
-        <div class="feature-grid">
-          <article class="feature-card">
-            <span class="feature-index">01</span>
-            <h3>Deceptive URL structures</h3>
-            <p>Long URLs, masked credentials, unusual hostnames, and extra subdomains are scored immediately.</p>
-          </article>
-          <article class="feature-card">
-            <span class="feature-index">02</span>
-            <h3>Unsafe delivery patterns</h3>
-            <p>Non-HTTPS links and suspicious domain shapes are surfaced before a user interacts with the page.</p>
-          </article>
-          <article class="feature-card">
-            <span class="feature-index">03</span>
-            <h3>Operational visibility</h3>
-            <p>Every check stays searchable in the browser so repeat reviews and investigation trails stay fast.</p>
-          </article>
-        </div>
-      </section>
-
-      <section id="workflow" class="content-section workflow-section reveal-on-scroll">
-        <div class="section-heading">
-          <p class="section-tag">Workflow</p>
-          <h2>From suspicious link to decision in a few seconds.</h2>
-        </div>
-
-        <div class="workflow-grid">
-          <article class="workflow-step">
-            <span>Step 1</span>
-            <h3>Paste the URL</h3>
-            <p>Enter a full link or raw domain. Missing protocols are normalized automatically.</p>
-          </article>
-          <article class="workflow-step">
-            <span>Step 2</span>
-            <h3>Run the analysis</h3>
-            <p>Heuristic scoring and backend lookup work together to classify the destination.</p>
-          </article>
-          <article class="workflow-step">
-            <span>Step 3</span>
-            <h3>Review the evidence</h3>
-            <p>Risk labels, scores, and backend results help decide whether the link is safe to trust.</p>
-          </article>
-        </div>
-      </section>
-
-      <section id="analyzer" class="workspace-section reveal-on-scroll">
-        <div class="section-heading">
-          <p class="section-tag">Scanner</p>
-          <h2>Analyze a suspicious link right now.</h2>
-        </div>
-
-        <div class="workspace-grid">
-          <section class="panel scanner-panel">
-            <div class="panel-heading">
-              <div>
-                <p class="panel-kicker">Live analysis</p>
-                <h3>URL inspection console</h3>
+        <div class="hero-visual">
+          <div class="glass-card visual-card float-anim">
+            <div class="card-header-minimal">
+              <div class="window-controls">
+                <span></span><span></span><span></span>
               </div>
-              <span class="panel-badge">Heuristics + API</span>
+              <p class="header-status">Live Monitoring</p>
             </div>
-
-            <label class="input-label" for="urlInput">URL to inspect</label>
-            <div class="input-row">
-              <input
-                type="text"
-                id="urlInput"
-                placeholder="example.com/login"
-                autocomplete="off"
-                spellcheck="false"
-              />
-              <button id="checkBtn" class="button button-primary" type="button">Analyze URL</button>
+            <div class="visual-body">
+               <div class="skeleton-line w-100"></div>
+               <div class="skeleton-line w-75"></div>
+               <div class="status-indicator">
+                 <div class="ring-pulse"></div> Active Shield
+               </div>
+               <p class="meta-data" id="summaryLastChecked">Awaiting check...</p>
             </div>
-
-            <div id="feedback" class="feedback" aria-live="polite">
-              Enter a full URL or domain. Missing protocols are added automatically.
-            </div>
-
-            <div class="signal-list" aria-label="Checks included">
-              <span>URL length</span>
-              <span>HTTPS usage</span>
-              <span>Hostname complexity</span>
-              <span>Credential masking</span>
-              <span>Backend match result</span>
-            </div>
-          </section>
-
-          <aside class="panel side-panel">
-            <div class="panel-heading">
-              <div>
-                <p class="panel-kicker">Guidance</p>
-                <h3>What to do with a risky result</h3>
-              </div>
-            </div>
-
-            <div class="guidance-list">
-              <article>
-                <strong>Safe</strong>
-                <p>Low-risk heuristic result. Review the destination anyway if it asks for credentials.</p>
-              </article>
-              <article>
-                <strong>Suspicious</strong>
-                <p>Inspect manually before clicking. Confirm the sender, hostname, and certificate details.</p>
-              </article>
-              <article>
-                <strong>Phishing</strong>
-                <p>Do not sign in or submit data. Escalate the link for manual investigation or blocklisting.</p>
-              </article>
-            </div>
-          </aside>
+          </div>
+          <div class="glass-card visual-card-small float-anim-delayed">
+             <div class="risk-badge badge-warning">Suspicious</div>
+             <div class="skeleton-line"></div>
+          </div>
         </div>
       </section>
 
-      <section id="history" class="content-section reveal-on-scroll">
-        <div class="panel history-panel">
-          <div class="history-toolbar">
+      <!-- Analyzer Section -->
+      <section id="analyzer" class="analyzer-section reveal-on-scroll">
+        <div class="section-header text-center">
+          <h2 class="section-title">Threat Intelligence <span class="text-gradient">Console</span></h2>
+          <p class="section-desc">Paste a suspicious link below. Our engine runs multi-vector analysis across length, HTTP protocols, hostname structures, and custom backends.</p>
+        </div>
+
+        <div class="console-wrapper glass-panel">
+          <div class="console-inner">
+            <label class="input-label" for="urlInput">Target URL</label>
+            <div class="input-group">
+              <div class="input-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+              </div>
+              <input type="text" id="urlInput" class="premium-input" placeholder="https://example.com/login" autocomplete="off" spellcheck="false" />
+              <button id="checkBtn" class="btn btn-action" type="button">
+                <span class="btn-text">Analyze</span>
+                <div class="btn-loader hidden" id="checkLoader"></div>
+              </button>
+            </div>
+            <div id="feedback" class="feedback-message">Awaiting input...</div>
+            
+            <div class="signals-hud">
+               <div class="hud-item"><span class="hud-dot"></span> Heuristic Scoring</div>
+               <div class="hud-item"><span class="hud-dot"></span> API Blacklist</div>
+               <div class="hud-item"><span class="hud-dot"></span> Domain Inspection</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Features Bento Grid -->
+      <section id="features" class="features-section reveal-on-scroll">
+        <div class="section-header">
+          <h2 class="section-title">Why <span class="text-gradient">PhishGuard?</span></h2>
+          <p class="section-desc">Engineered for accuracy, built for speed.</p>
+        </div>
+
+        <div class="bento-grid">
+          <div class="bento-card bento-large group-hover">
+            <div class="bento-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            </div>
+            <h3 class="bento-title">Multi-Layered Heuristics</h3>
+            <p class="bento-desc">We don't just rely on blocklists. PhishGuard evaluates structural anomalies, sub-domain complexity, and credential masking mechanisms dynamically to catch zero-day threats.</p>
+          </div>
+
+          <div class="bento-card group-hover">
+            <div class="bento-icon wrapper-cyan">
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            </div>
+            <h3 class="bento-title">Real-time Checking</h3>
+            <p class="bento-desc">Fetch integration hits our custom backend endpoints without blocking your browser.</p>
+          </div>
+
+          <div class="bento-card group-hover">
+             <div class="bento-icon wrapper-purple">
+               <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+             </div>
+             <h3 class="bento-title">Historical Log</h3>
+             <p class="bento-desc">Every check resides locally in your browser's persistent storage. Search, filter, and review securely.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- History Section -->
+      <section id="history" class="history-section reveal-on-scroll">
+        <div class="glass-panel history-panel">
+          <div class="history-header">
             <div>
-              <p class="panel-kicker">History</p>
-              <h3>Review previous checks</h3>
+              <h2 class="section-title text-sm">Action <span class="text-gradient">History</span></h2>
+              <p class="section-desc">Review your past URL scans.</p>
             </div>
-
-            <div class="toolbar-actions">
-              <input type="text" id="searchInput" placeholder="Search checked URLs" />
-              <select id="filterSelect" aria-label="Filter results by risk">
-                <option value="All">All</option>
-                <option value="Safe">Safe</option>
-                <option value="Suspicious">Suspicious</option>
-                <option value="Phishing">Phishing</option>
-              </select>
-              <button id="sortBtn" class="button button-secondary" type="button">Sort: Newest</button>
-              <button id="clearHistoryBtn" class="button button-ghost" type="button">Clear history</button>
+            <div class="history-controls">
+              <div class="search-box">
+                <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" id="searchInput" class="premium-input input-sm" placeholder="Search URLs..." />
+              </div>
+              <div class="select-wrapper">
+                <select id="filterSelect" class="premium-select" aria-label="Filter results">
+                  <option value="All">All Risks</option>
+                  <option value="Safe">Safe</option>
+                  <option value="Suspicious">Suspicious</option>
+                  <option value="Phishing">Phishing</option>
+                </select>
+              </div>
+              <button id="sortBtn" class="btn btn-outline" type="button">Sort: Newest</button>
+              <button id="clearHistoryBtn" class="btn btn-ghost text-danger" type="button">Clear</button>
             </div>
           </div>
 
-          <div id="results" class="results-grid"></div>
+          <div class="history-body">
+            <!-- Loading skeleton overlay handled in JS -->
+            <div id="results" class="results-grid">
+               <!-- Cards populated by JS -->
+            </div>
+          </div>
+          
+          <div class="history-footer">
+            <div class="pagination-controls">
+              <button id="prevPageBtn" class="btn btn-icon" disabled>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+              </button>
+              <span id="pageIndicator" class="page-indicator">Page 1 of 1</span>
+              <button id="nextPageBtn" class="btn btn-icon" disabled>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </button>
+            </div>
+          </div>
         </div>
       </section>
+
     </main>
   </div>
 

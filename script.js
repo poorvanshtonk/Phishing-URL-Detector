@@ -1,67 +1,34 @@
 import { analyzeURL } from "./js/analyzer.js";
 import { render } from "./js/ui.js";
 import { getFromStorage, saveToStorage } from "./js/storage.js";
+import { debounce, paginate } from "./js/utils.js";
 
 const state = {
   history: [],
   searchTerm: "",
   filter: "All",
-  sortMode: "newest"
+  sortMode: "newest",
+  currentPage: 1,
+  itemsPerPage: 6
 };
 
-const THEME_STORAGE_KEY = "theme-preference";
+// Selectors
+const getEl = (id) => document.getElementById(id);
 
-function getElement(id) {
-  const element = document.getElementById(id);
-
-  if (!element) {
-    throw new Error(`Missing required element: #${id}`);
-  }
-
-  return element;
-}
-
-function normalizeStoredHistory(value) {
-  const history = Array.isArray(value) ? value.filter((item) => item && typeof item === "object") : [];
-  return history.reverse();
-}
-
-function formatVisibleFilter() {
-  if (state.filter === "All") {
-    return state.searchTerm ? "Search results" : "All results";
-  }
-
-  return state.filter;
-}
-
-function updateFeedback(message, type = "") {
-  const feedback = getElement("feedback");
-  feedback.textContent = message;
-  feedback.className = `feedback ${type}`.trim();
-}
-
-function updateSummary(visibleItems) {
+// Update Dashboard Statistics
+function updateSummary() {
   const total = state.history.length;
   const phishing = state.history.filter((item) => item?.level === "Phishing").length;
   const safe = state.history.filter((item) => item?.level === "Safe").length;
-  const latestTimestamp = state.history[0]?.timestamp || "No checks yet";
+  const latest = state.history[0]?.timestamp || "Awaiting check...";
 
-  getElement("summaryTotal").textContent = String(total);
-  getElement("summaryPhishing").textContent = String(phishing);
-  getElement("summarySafe").textContent = String(safe);
-  getElement("summaryLastChecked").textContent = latestTimestamp;
-  getElement("historyCount").textContent = String(visibleItems.length);
-  getElement("activeFilterLabel").textContent = formatVisibleFilter();
+  getEl("summaryTotal").textContent = total;
+  getEl("summaryPhishing").textContent = phishing;
+  getEl("summarySafe").textContent = safe;
+  getEl("summaryLastChecked").textContent = latest;
 }
 
-function getEmptyMessage() {
-  if (state.history.length === 0) {
-    return "Your analysis history is empty. Start by checking a suspicious link above.";
-  }
-
-  return "Nothing matches the current search and filter settings.";
-}
-
+// Compute Viewable Items (Filter, Search, Sort)
 function getVisibleItems() {
   let items = [...state.history];
 
@@ -70,228 +37,202 @@ function getVisibleItems() {
   }
 
   if (state.searchTerm) {
-    const needle = state.searchTerm.toLowerCase();
-    items = items.filter((item) => {
-      const url = typeof item?.url === "string" ? item.url.toLowerCase() : "";
-      return url.includes(needle);
-    });
+    const term = state.searchTerm.toLowerCase();
+    items = items.filter((item) => (item?.url || "").toLowerCase().includes(term));
   }
 
   if (state.sortMode === "risk") {
-    items.sort((left, right) => {
-      const leftScore = Number.isFinite(left?.score) ? left.score : -1;
-      const rightScore = Number.isFinite(right?.score) ? right.score : -1;
-      return rightScore - leftScore;
-    });
+    items.sort((a, b) => (b?.score || 0) - (a?.score || 0));
+  } else {
+    // Keep newest first
   }
 
   return items;
 }
 
+function updatePaginationControls(totalVisibleItems) {
+  const totalPages = Math.ceil(totalVisibleItems / state.itemsPerPage) || 1;
+  
+  if (state.currentPage > totalPages) {
+    state.currentPage = totalPages;
+  }
+  
+  getEl("pageIndicator").textContent = `Page ${state.currentPage} of ${totalPages}`;
+  getEl("prevPageBtn").disabled = state.currentPage <= 1;
+  getEl("nextPageBtn").disabled = state.currentPage >= totalPages;
+}
+
 function applyViewState() {
-  const items = getVisibleItems();
-  updateSummary(items);
-  render(items, { emptyMessage: getEmptyMessage() });
-}
-
-function setBusy(button, isBusy) {
-  button.disabled = isBusy;
-  button.textContent = isBusy ? "Analyzing..." : "Analyze URL";
-}
-
-function getPreferredTheme() {
-  const storedTheme = localStorage.getItem(THEME_STORAGE_KEY);
-
-  if (storedTheme === "light" || storedTheme === "dark") {
-    return storedTheme;
-  }
-
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-}
-
-function updateThemeButton(theme) {
-  const label = document.getElementById("themeToggleLabel");
-  const toggle = document.getElementById("themeToggle");
-
-  if (!label || !toggle) {
-    return;
-  }
-
-  const nextMode = theme === "dark" ? "Light mode" : "Dark mode";
-  label.textContent = nextMode;
-  toggle.setAttribute("aria-label", `Switch to ${nextMode.toLowerCase()}`);
-}
-
-function applyTheme(theme) {
-  document.documentElement.setAttribute("data-theme", theme);
-  localStorage.setItem(THEME_STORAGE_KEY, theme);
-  updateThemeButton(theme);
-}
-
-function initializeTheme() {
-  const themeToggle = document.getElementById("themeToggle");
-  const initialTheme = getPreferredTheme();
-
-  applyTheme(initialTheme);
-
-  if (!themeToggle) {
-    return;
-  }
-
-  themeToggle.addEventListener("click", () => {
-    const currentTheme = document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
-    applyTheme(currentTheme === "dark" ? "light" : "dark");
+  const allVisibleItems = getVisibleItems();
+  updatePaginationControls(allVisibleItems.length);
+  
+  const pageItems = paginate(allVisibleItems, state.currentPage, state.itemsPerPage);
+  
+  updateSummary();
+  render(pageItems, { 
+    emptyMessage: state.history.length === 0 
+      ? "Your analysis log is empty. Scan a suspicious URL above." 
+      : "No matches found for the current search and filter settings." 
   });
 }
 
-function initializeNavigation() {
-  const navToggle = document.getElementById("navToggle");
-  const siteNav = document.getElementById("siteNav");
-
-  if (!navToggle || !siteNav) {
-    return;
+function setBusy(isBusy) {
+  const btn = getEl("checkBtn");
+  const loader = getEl("checkLoader");
+  const btnText = btn.querySelector(".btn-text");
+  
+  btn.disabled = isBusy;
+  if (isBusy) {
+    loader.classList.remove("hidden");
+    btnText.textContent = "Analyzing";
+  } else {
+    loader.classList.add("hidden");
+    btnText.textContent = "Analyze";
   }
-
-  navToggle.addEventListener("click", () => {
-    const nextExpanded = navToggle.getAttribute("aria-expanded") !== "true";
-    navToggle.setAttribute("aria-expanded", String(nextExpanded));
-    siteNav.classList.toggle("is-open", nextExpanded);
-  });
-
-  siteNav.querySelectorAll("a").forEach((link) => {
-    link.addEventListener("click", () => {
-      navToggle.setAttribute("aria-expanded", "false");
-      siteNav.classList.remove("is-open");
-    });
-  });
 }
 
-function initializeRevealAnimations() {
-  const revealables = Array.from(document.querySelectorAll(".reveal-on-scroll"));
-
-  if (!revealables.length) {
-    return;
-  }
-
-  if (!("IntersectionObserver" in window)) {
-    revealables.forEach((element) => element.classList.add("is-visible"));
-    return;
-  }
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (!entry.isIntersecting) {
-        return;
-      }
-
-      entry.target.classList.add("is-visible");
-      observer.unobserve(entry.target);
-    });
-  }, { threshold: 0.16 });
-
-  revealables.forEach((element) => observer.observe(element));
-}
-
-function getNormalizedInputUrl(rawValue) {
-  const value = typeof rawValue === "string" ? rawValue.trim() : "";
-
-  if (!value) {
-    throw new Error("Enter a URL to inspect.");
-  }
-
-  const withProtocol = /^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(value) ? value : `https://${value}`;
-  return new URL(withProtocol).href;
+function updateFeedback(msg, typeClass = "") {
+  const feedback = getEl("feedback");
+  feedback.textContent = msg;
+  feedback.className = `feedback-message ${typeClass}`;
 }
 
 async function handleCheck() {
-  const input = getElement("urlInput");
-  const button = getElement("checkBtn");
+  const input = getEl("urlInput");
+  const urlValue = input.value.trim();
+
+  if (!urlValue) {
+    updateFeedback("Please enter a valid URL.", "text-warning");
+    return;
+  }
 
   try {
-    setBusy(button, true);
-    updateFeedback("Running phishing checks against the submitted URL...");
+    setBusy(true);
+    updateFeedback("Running heuristic and backend analysis...", "");
 
-    const normalizedUrl = getNormalizedInputUrl(input.value);
-    const result = await analyzeURL(normalizedUrl);
-
+    const result = await analyzeURL(urlValue);
+    
+    // Save to beginning of history
     state.history.unshift(result);
     saveToStorage(result);
-    input.value = normalizedUrl;
+    // Reset back to page 1 to see the newest item
+    state.currentPage = 1;
+    
     applyViewState();
 
     if (result.error) {
-      updateFeedback("URL analyzed, but the backend check was unavailable. Showing heuristic result.", "warning");
-      return;
+      updateFeedback("Analyzed locally. Backend was unreachable.", "text-warning");
+    } else {
+      updateFeedback(`Done! Result level: ${result.level}`, "text-success");
     }
-
-    updateFeedback(`Analysis complete. Result: ${result.level}.`, "success");
-  } catch (error) {
-    console.error("URL analysis failed:", error);
-    updateFeedback(error instanceof Error ? error.message : "Unable to analyze the URL.", "warning");
+  } catch (err) {
+    updateFeedback(err.message, "text-danger");
   } finally {
-    setBusy(button, false);
+    setBusy(false);
   }
 }
 
-function handleClearHistory() {
-  state.history = [];
-  localStorage.removeItem("history");
-  updateFeedback("Local history cleared.");
-  applyViewState();
+// Light / Dark Theme toggle
+function initTheme() {
+  const btn = getEl("themeToggle");
+  const html = document.documentElement;
+  
+  const storedTheme = localStorage.getItem("theme-preference") || "dark";
+  html.setAttribute("data-theme", storedTheme);
+
+  btn.addEventListener("click", () => {
+    const current = html.getAttribute("data-theme");
+    const next = current === "dark" ? "light" : "dark";
+    html.setAttribute("data-theme", next);
+    localStorage.setItem("theme-preference", next);
+  });
 }
 
+// Mobile Nav toggle
+function initNav() {
+  const navToggle = getEl("navToggle");
+  const siteNav = getEl("siteNav");
+  
+  navToggle.addEventListener("click", () => {
+    siteNav.classList.toggle("is-open");
+  });
+}
+
+// Intersection Observer for scroll animations
+function initReveal() {
+  const items = document.querySelectorAll(".reveal-on-scroll");
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("is-visible");
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  
+  items.forEach(el => observer.observe(el));
+}
+
+// Bind all events
 function bindEvents() {
-  const checkBtn = getElement("checkBtn");
-  const clearHistoryBtn = getElement("clearHistoryBtn");
-  const urlInput = getElement("urlInput");
-  const searchInput = getElement("searchInput");
-  const filterSelect = getElement("filterSelect");
-  const sortBtn = getElement("sortBtn");
+  getEl("checkBtn").addEventListener("click", handleCheck);
 
-  checkBtn.addEventListener("click", async () => {
-    await handleCheck();
+  getEl("urlInput").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") handleCheck();
   });
 
-  clearHistoryBtn.addEventListener("click", () => {
-    handleClearHistory();
+  // Debounced search
+  const handleSearch = debounce((e) => {
+    state.searchTerm = e.target.value.trim();
+    state.currentPage = 1;
+    applyViewState();
+  }, 300);
+
+  getEl("searchInput").addEventListener("input", handleSearch);
+
+  getEl("filterSelect").addEventListener("change", (e) => {
+    state.filter = e.target.value;
+    state.currentPage = 1;
+    applyViewState();
   });
 
-  urlInput.addEventListener("keydown", async (event) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      await handleCheck();
+  const sortBtn = getEl("sortBtn");
+  sortBtn.addEventListener("click", () => {
+    state.sortMode = state.sortMode === "newest" ? "risk" : "newest";
+    sortBtn.textContent = state.sortMode === "risk" ? "Sort: Highest Risk" : "Sort: Newest";
+    applyViewState();
+  });
+
+  getEl("clearHistoryBtn").addEventListener("click", () => {
+    state.history = [];
+    localStorage.removeItem("history");
+    updateFeedback("History cleared.");
+    applyViewState();
+  });
+
+  // Pagination buttons
+  getEl("prevPageBtn").addEventListener("click", () => {
+    if (state.currentPage > 1) {
+      state.currentPage--;
+      applyViewState();
     }
   });
 
-  searchInput.addEventListener("input", (event) => {
-    state.searchTerm = typeof event.target?.value === "string" ? event.target.value.trim() : "";
-    applyViewState();
-  });
-
-  filterSelect.addEventListener("change", (event) => {
-    state.filter = typeof event.target?.value === "string" ? event.target.value : "All";
-    applyViewState();
-  });
-
-  sortBtn.addEventListener("click", () => {
-    state.sortMode = state.sortMode === "newest" ? "risk" : "newest";
-    sortBtn.textContent = state.sortMode === "risk" ? "Sort: Highest risk" : "Sort: Newest";
+  getEl("nextPageBtn").addEventListener("click", () => {
+    state.currentPage++;
     applyViewState();
   });
 }
 
 function initializeApp() {
-  try {
-    state.history = normalizeStoredHistory(getFromStorage());
-    initializeTheme();
-    initializeNavigation();
-    initializeRevealAnimations();
-    bindEvents();
-    applyViewState();
-  } catch (error) {
-    console.error("App initialization failed:", error);
-    updateFeedback("The app could not be initialized. Check the console for details.", "warning");
-  }
+  const rawHistory = getFromStorage();
+  state.history = Array.isArray(rawHistory) ? rawHistory : [];
+
+  initTheme();
+  initNav();
+  initReveal();
+  bindEvents();
+  applyViewState();
 }
 
-initializeApp();
+document.addEventListener("DOMContentLoaded", initializeApp);
