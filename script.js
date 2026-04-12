@@ -12,10 +12,10 @@ const state = {
   itemsPerPage: 6
 };
 
-// Selectors
+// Grab the DOM elements easily
 const getEl = (id) => document.getElementById(id);
 
-// Update Dashboard Statistics
+// Crunch the numbers for the stats board
 function updateSummary() {
   const total = state.history.length;
   const phishing = state.history.filter((item) => item?.level === "Phishing").length;
@@ -28,7 +28,7 @@ function updateSummary() {
   getEl("summaryLastChecked").textContent = latest;
 }
 
-// Compute Viewable Items (Filter, Search, Sort)
+// Figure out what to actually show based on search, filters, and sorting
 function getVisibleItems() {
   let items = [...state.history];
 
@@ -44,7 +44,7 @@ function getVisibleItems() {
   if (state.sortMode === "risk") {
     items.sort((a, b) => (b?.score || 0) - (a?.score || 0));
   } else {
-    // Keep newest first
+    // Just keep them in the order they came in (newest first)
   }
 
   return items;
@@ -112,10 +112,10 @@ async function handleCheck() {
 
     const result = await analyzeURL(urlValue);
     
-    // Save to beginning of history
+    // Toss the new result right at the top of our log
     state.history.unshift(result);
     saveToStorage(result);
-    // Reset back to page 1 to see the newest item
+    // Bump the user back to the first page so they can see what just happened
     state.currentPage = 1;
     
     applyViewState();
@@ -132,7 +132,7 @@ async function handleCheck() {
   }
 }
 
-// Light / Dark Theme toggle
+// Handle switching between dark mode and light mode
 function initTheme() {
   const btn = getEl("themeToggle");
   const html = document.documentElement;
@@ -148,7 +148,7 @@ function initTheme() {
   });
 }
 
-// Mobile Nav toggle
+// Make the hamburger menu work on small screens
 function initNav() {
   const navToggle = getEl("navToggle");
   const siteNav = getEl("siteNav");
@@ -158,7 +158,7 @@ function initNav() {
   });
 }
 
-// Intersection Observer for scroll animations
+// Trigger those cool fade-in animations when the user scrolls down
 function initReveal() {
   const items = document.querySelectorAll(".reveal-on-scroll");
   const observer = new IntersectionObserver((entries) => {
@@ -173,7 +173,7 @@ function initReveal() {
   items.forEach(el => observer.observe(el));
 }
 
-// Bind all events
+// Wire up all the buttons and inputs
 function bindEvents() {
   getEl("checkBtn").addEventListener("click", handleCheck);
 
@@ -181,7 +181,7 @@ function bindEvents() {
     if (e.key === "Enter") handleCheck();
   });
 
-  // Debounced search
+  // Don't search on every single keystroke, wait a tiny bit first
   const handleSearch = debounce((e) => {
     state.searchTerm = e.target.value.trim();
     state.currentPage = 1;
@@ -210,7 +210,7 @@ function bindEvents() {
     applyViewState();
   });
 
-  // Pagination buttons
+  // Hook up the next and previous page buttons
   getEl("prevPageBtn").addEventListener("click", () => {
     if (state.currentPage > 1) {
       state.currentPage--;
